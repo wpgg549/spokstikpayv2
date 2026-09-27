@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Downloader - Doodle Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fbf9f1;
+            color: #111111;
+            margin: 0;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background-image: linear-gradient(#eee 1px, transparent 1px);
+            background-size: 100% 28px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 6px 6px 0px #111111;
+            width: 100%;
+            max-width: 600px;
+            border: 3px solid #111111;
+            position: relative;
+        }
+
+        .system-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #fff8dc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #111111;
+            box-shadow: 3px 3px 0px #111111;
+        }
+        .stat-item { text-align: center; }
+        .stat-label {
+            font-size: 10px;
+            color: #555;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+        .stat-value { font-size: 13px; color: #d97706; font-weight: 800; }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h2 {
+            margin: 0;
+            font-family: 'Patrick Hand', cursive;
+            font-size: 36px;
+            color: #111111;
+            letter-spacing: 1px;
+        }
+        .header h2 span { background: #ffeb3b; padding: 0 6px; border: 2px solid #111; border-radius: 4px; }
+        .header p { color: #666; font-size: 13px; margin-top: 4px; font-style: italic; }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            background: #fff;
+            border: 2px solid #111;
+            color: #111;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px #111;
+            transition: all 0.1s;
+        }
+        .tab-btn:active { box-shadow: 1px 1px 0px #111; transform: translate(2px, 2px); }
+        .tab-btn.active {
+            background: #1db954;
+            color: #fff;
+            border-color: #111;
+        }
+        
+        .input-group { position: relative; margin-bottom: 15px; }
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: #fff;
+            border: 2px solid #111;
+            color: #111;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            box-shadow: 3px 3px 0px #111;
+        }
+        input[type="text"]:focus { background: #fdfdfd; border-color: #1db954; }
+        
+        .action-btn {
+            background: #ffeb3b;
+            color: #111;
+            border: 2px solid #111;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            width: 100%;
+            font-size: 15px;
+            box-shadow: 3px 3px 0px #111;
+            transition: all 0.1s;
+        }
+        .action-btn:hover { background: #facc15; }
+        .action-btn:active { box-shadow: 1px 1px 0px #111; transform: translate(2px, 2px); }
+        
+        .loading {
+            text-align: center;
+            color: #d97706;
+            margin-top: 15px;
+            font-weight: 700;
+            font-size: 13px;
+            display: none;
+        }
+        
+        .search-results {
+            margin-top: 20px;
+            max-height: 320px;
+            overflow-y: auto;
+            display: none;
+        }
+        .search-item {
+            background: #fff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid #111;
+            box-shadow: 3px 3px 0px #111;
+        }
+        .search-item img { width: 45px; height: 45px; border-radius: 6px; border: 2px solid #111; object-fit: cover; }
+        .search-info { flex: 1; overflow: hidden; }
+        .search-info h4 { margin: 0 0 2px 0; font-size: 14px; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .search-info p { margin: 0; font-size: 11px; color: #666; }
+        .btn-select {
+            background: #1db954;
+            color: #fff;
+            border: 2px solid #111;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 2px 2px 0px #111;
+        }
+        .btn-select:hover { background: #15803d; }
+
+        .result-card {
+            margin-top: 20px;
+            background: #f0fdf4;
+            border-radius: 10px;
+            padding: 16px;
+            display: none;
+            align-items: center;
+            gap: 16px;
+            border: 2px solid #111;
+            box-shadow: 4px 4px 0px #111;
+        }
+        .result-card img {
+            width: 95px;
+            height: 95px;
+            border-radius: 8px;
+            border: 2px solid #111;
+            object-fit: cover;
+        }
+        .song-info { flex: 1; overflow: hidden; }
+        .song-info h3 {
+            margin: 0 0 4px 0;
+            color: #111;
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .song-info p { margin: 3px 0; color: #555; font-size: 12px; }
+        
+        .btn-download {
+            display: inline-block;
+            margin-top: 8px;
+            background: #1db954;
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            border: 2px solid #111;
+            box-shadow: 2px 2px 0px #111;
+        }
+        .btn-download:hover { background: #15803d; }
+
+        .lyrics-container { margin-top: 15px; display: none; }
+        .lyrics-toggle {
+            background: #fff;
+            border: 2px solid #111;
+            color: #111;
+            padding: 10px 14px;
+            border-radius: 8px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 3px 3px 0px #111;
+        }
+        .lyrics-toggle:hover { background: #fef08a; }
+        .lyrics-box {
+            margin-top: 8px;
+            background: #fff;
+            color: #333;
+            padding: 14px;
+            border-radius: 8px;
+            max-height: 160px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre-line;
+            border: 2px solid #111;
+            box-shadow: 3px 3px 0px #111;
+            display: none;
+        }
+
+        .floating-wm {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ffeb3b;
+            border: 2px solid #111;
+            color: #111;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            box-shadow: 4px 4px 0px #111;
+            z-index: 1000;
+            transform: rotate(-3deg);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .floating-wm span { background: #111; color: #fff; padding: 2px 6px; border-radius: 4px; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #111; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div class="floating-wm">Pecut <span>AI</span></div>
+
+    <div class="container">
+        <div class="system-stats">
+            <div class="stat-item">
+                <div class="stat-label">Baterai</div>
+                <div class="stat-value" id="batteryStatus">...</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Jaringan</div>
+                <div class="stat-value" id="networkStatus">...</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Latensi</div>
+                <div class="stat-value" id="latencyStatus">...</div>
+            </div>
+        </div>
+
+        <div class="header">
+            <h2>Spotify <span>Donloder</span></h2>
+            <p>~ coret-coret & unduh musik favoritmu ~</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabLink" onclick="switchMode('link')">🔗 Via Link</button>
+            <button class="tab-btn" id="tabSearch" onclick="switchMode('search')">🔍 Cari Judul</button>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="inputField" placeholder="https://open.spotify.com/track/..." value="https://open.spotify.com/track/5kJ2lw9zz2BMMN7YcI4NZb">
+        </div>
+        
+        <button class="action-btn" id="actionBtn" onclick="processAction()">Download MP3 ⚡</button>
+        
+        <div id="loading" class="loading">Sabar ya, lagi diambilin datanya... ✍️</div>
+
+        <div id="searchResults" class="search-results"></div>
+
+        <div id="resultCard" class="result-card">
+            <img id="songCover" src="" alt="Album Cover">
+            <div class="song-info">
+                <h3 id="songTitle">-</h3>
+                <p id="songArtist">-</p>
+                <p id="songAlbum">-</p>
+                <a id="downloadBtn" href="#" class="btn-download" target="_blank">📥 Unduh File</a>
+            </div>
+        </div>
+
+        <div id="lyricsContainer" class="lyrics-container">
+            <button class="lyrics-toggle" onclick="toggleLyrics()">
+                <span>📄 Buka Lirik Lagu</span>
+                <span id="arrowIcon">▼</span>
+            </button>
+            <div id="lyricsBox" class="lyrics-box"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'link';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            const inputField = document.getElementById('inputField');
+            const actionBtn = document.getElementById('actionBtn');
+            const tabLink = document.getElementById('tabLink');
+            const tabSearch = document.getElementById('tabSearch');
+            
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('lyricsContainer').style.display = 'none';
+
+            if (mode === 'link') {
+                tabLink.classList.add('active');
+                tabSearch.classList.remove('active');
+                inputField.placeholder = "https://open.spotify.com/track/...";
+                inputField.value = "https://open.spotify.com/track/5kJ2lw9zz2BMMN7YcI4NZb";
+                actionBtn.textContent = "Download MP3 ⚡";
+            } else {
+                tabSearch.classList.add('active');
+                tabLink.classList.remove('active');
+                inputField.placeholder = "Ketik judul lagu (Contoh: dan ku berdoa)...";
+                inputField.value = "dan ku berdoa";
+                actionBtn.textContent = "Cari Lagu 🔍";
+            }
+        }
+
+        async function processAction() {
+            const queryVal = document.getElementById('inputField').value;
+            const loading = document.getElementById('loading');
+            
+            if (!queryVal) {
+                alert('Jangan dikosongin dong bro!');
+                return;
+            }
+
+            loading.style.display = 'block';
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('lyricsContainer').style.display = 'none';
+
+            if (currentMode === 'link') {
+                const proxyUrl = `/api/proxy?type=download&url=${encodeURIComponent(queryVal)}`;
+                try {
+                    const response = await fetch(proxyUrl);
+                    const res = await response.json();
+                    loading.style.display = 'none';
+
+                    if (res.status && res.result) {
+                        displaySongResult(res.result);
+                    } else {
+                        alert('Gagal mengambil data lagu!');
+                    }
+                } catch (error) {
+                    loading.style.display = 'none';
+                    alert("Error: " + error.message);
+                }
+            } else {
+                const proxyUrl = `/api/proxy?type=search&query=${encodeURIComponent(queryVal)}`;
+                try {
+                    const response = await fetch(proxyUrl);
+                    const res = await response.json();
+                    loading.style.display = 'none';
+
+                    // Menyesuaikan struktur JSON res.result sebagai array list lagu
+                    if (res.status && res.result && Array.isArray(res.result)) {
+                        displaySearchResults(res.result);
+                    } else {
+                        alert('Lagu tidak ketemu!');
+                    }
+                } catch (error) {
+                    loading.style.display = 'none';
+                    alert("Error: " + error.message);
+                }
+            }
+        }
+
+        function displaySongResult(data) {
+            document.getElementById('songCover').src = data.cover;
+            document.getElementById('songTitle').textContent = data.title;
+            document.getElementById('songArtist').textContent = data.artists.join(', ');
+            document.getElementById('songAlbum').textContent = `${data.album.name} • ${data.duration}`;
+            document.getElementById('downloadBtn').href = data.downloadUrl;
+
+            document.getElementById('resultCard').style.display = 'flex';
+
+            if (data.lyrics && data.lyrics.plainLyrics) {
+                document.getElementById('lyricsBox').textContent = data.lyrics.plainLyrics;
+                document.getElementById('lyricsContainer').style.display = 'block';
+            }
+        }
+
+        function displaySearchResults(tracks) {
+            const container = document.getElementById('searchResults');
+            container.innerHTML = '';
+
+            tracks.forEach(song => {
+                const item = document.createElement('div');
+                item.className = 'search-item';
+                // Mengambil property name, artists, cover, dan spotifyUrl sesuai contoh JSON
+                item.innerHTML = `
+                    <img src="${song.cover || ''}" alt="Cover">
+                    <div class="search-info">
+                        <h4>${song.name}</h4>
+                        <p>${song.artists} • ${song.album} (${song.duration})</p>
+                    </div>
+                    <button class="btn-select" onclick="downloadFromSearch('${song.spotifyUrl}')">Pilih</button>
+                `;
+                container.appendChild(item);
+            });
+
+            container.style.display = 'block';
+        }
+
+        function downloadFromSearch(spotifyUrl) {
+            if (!spotifyUrl) {
+                alert('URL tidak valid!');
+                return;
+            }
+            switchMode('link');
+            document.getElementById('inputField').value = spotifyUrl;
+            processAction();
+        }
+
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                function updateBattery() {
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? '⚡ ' : '';
+                    document.getElementById('batteryStatus').textContent = `${charging}${level}%`;
+                }
+                updateBattery();
+                battery.addEventListener('levelchange', updateBattery);
+                battery.addEventListener('chargingchange', updateBattery);
+            });
+        } else {
+            document.getElementById('batteryStatus').textContent = 'OK';
+        }
+
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (connection) {
+            function updateNetwork() {
+                const type = connection.effectiveType ? connection.effectiveType.toUpperCase() : 'OK';
+                document.getElementById('networkStatus').textContent = type;
+            }
+            updateNetwork();
+            connection.addEventListener('change', updateNetwork);
+        } else {
+            document.getElementById('networkStatus').textContent = 'Online';
+        }
+
+        async function measureLatency() {
+            const latencyEl = document.getElementById('latencyStatus');
+            const start = performance.now();
+            try { await fetch('/api/proxy'); } catch (e) {}
+            const end = performance.now();
+            latencyEl.textContent = `${Math.round(end - start)} ms`;
+        }
+        measureLatency();
+
+        function toggleLyrics() {
+            const lyricsBox = document.getElementById('lyricsBox');
+            const arrowIcon = document.getElementById('arrowIcon');
+            if (lyricsBox.style.display === 'block') {
+                lyricsBox.style.display = 'none';
+                arrowIcon.textContent = '▼';
+            } else {
+                lyricsBox.style.display = 'block';
+                arrowIcon.textContent = '▲';
+            }
+        }
+    </script>
+</body>
+                  </html>
+                  
